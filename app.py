@@ -3,16 +3,15 @@ import mysql.connector
 from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_here"
 bcrypt = Bcrypt(app)
 
 # Database Configuration
 def get_db_connection():
     return mysql.connector.connect(
         host='localhost',
-        user='root',
-        password='root',
-        database='bus_ticket_management'
+        user='',
+        password='',
+        database=''
     )
 
 # Routes
