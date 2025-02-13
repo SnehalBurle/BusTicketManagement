@@ -17,9 +17,9 @@ bcrypt = Bcrypt(app)
 def get_db_connection():
     return mysql.connector.connect(
         host='localhost',
-        user='root',
-        password='root',
-        database='bus_ticket_management'
+        user='YOUR USERNAME',
+        password='YOUR PASSWORD',
+        database='NAME OF DATABASE'
     )
 
 # Routes
