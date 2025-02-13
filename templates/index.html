@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>BMTC Bus Ticket Management System Using RFID</title>
+	<style>
+		body {
+			font-family: 'Arial', sans-serif;
+			margin: 0;
+			padding: 0;
+			/*background: url('./static/bus.png') no-repeat center center fixed;*/
+			background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(0, 0, 0, 0.7)), url('./static/bus.png');
+			background-size: cover;
+			background-position: center;
+			color: #000; /* Changed text color to black globally */
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 100vh; /* Full viewport height */
+			margin: 0;
+		}
+
+		.container {
+			max-width: 600px;
+			margin: 50px auto;
+			padding: 30px;
+			box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+			border-radius: 10px;
+			/*background: linear-gradient(60deg, #ff6b6b, #fddb3a, #4caf50);*/
+			/*background-image: linear-gradient(135deg, #ff6b6b, #fddb3a, #4caf50);*/
+			/*background: radial-gradient(circle, #ff6b6b, #fddb3a, #4caf50);*/
+			/*background: linear-gradient(45deg, #ff6b6b, #fddb3a, #4caf50);
+			background-size: 300% 300%;
+			animation: gradient-animation 5s ease infinite;*/
+			/**background-image: linear-gradient(135deg, rgba(255, 126, 95, 0.8), rgba(0, 255, 179, 0.8));*/
+			/*background: linear-gradient(90deg, #ff7e5f, #feb47b, #00c6ff);*/
+			background: linear-gradient(90deg, #ff4b1f, #ff9068, #fddb3a, rgba(0, 255, 115, 0.8));
+			background-size: 300% 300%;
+			animation: color-slide 10s ease infinite;
+			backdrop-filter: blur(10px);
+			width: 90%;
+			box-sizing: border-box;
+			color: white;
+		}
+
+		@keyframes gradient-animation {
+			0% {
+				background-position: 0% 50%;
+			}
+			50% {
+				background-position: 100% 50%;
+			}
+			100% {
+				background-position: 0% 50%;
+			}
+		}
+		@keyframes color-slide {
+			0% {
+				background-position: 0% 50%;
+			}
+			50% {
+				background-position: 100% 50%;
+			}
+			100% {
+				background-position: 0% 50%;
+			}
+		}
+		
+
+		h1, h2,h3 {
+			text-align: center;
+			margin-bottom: 20px;
+			color: black; /* Changed text color to black */
+		}
+
+		h1 {
+			font-size: 2.5em;
+		}
+
+		h2 {
+			font-size: 1.8em;
+		}
+
+		.login-options {
+			display: flex;
+			flex-direction: column; /* Stack the buttons vertically */
+			align-items: center;    /* Center-align buttons horizontally */
+			gap: 20px;              /* Add space between buttons */
+			margin-top: 50px;       /* Optional: Adds space above */
+		}
+
+		.login-options button {
+			width: 350px;           /* Set width of the buttons */
+			height: 100px;          /* Set height of the buttons */
+			font-size: 18px;        /* Make text more readable */
+			border: none;           /* Remove default border */
+			border-radius: 10px;    /* Optional: Rounded corners */
+			background-color: #007BFF; /* Button color */
+			color: white;           /* Text color */
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Shadow for a raised effect */
+			cursor: pointer;        /* Add pointer on hover */
+			transition: transform 0.2s, box-shadow 0.2s; /* Smooth hover effect */
+		}
+
+		.login-options button:hover {
+			transform: scale(1.05); /* Slightly enlarge button on hover */
+			box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* More pronounced shadow */
+		}
+
+		button {
+			padding: 15px 25px;
+			background: #007bff;
+			color: #fff;
+			border: none;
+			border-radius: 20px;
+			cursor: pointer;
+			font-size: 1em;
+			transition: 0.3s;
+			width: 48%;
+		}
+
+		button:hover {
+			background: #0056b3;
+			transform: scale(1.05);
+		}
+
+		.form-group {
+			margin-bottom: 20px;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 8px;
+			font-weight: bold;
+			color: black;
+		}
+
+		input, select {
+			width: 100%;
+			margin-bottom: 20px;
+			padding: 12px;
+			border: none;
+			border-radius: 5px;
+			background: #f8f9fa;
+			color: #333;
+		}
+
+		.balance {
+			font-size: 1.5em;
+			color: #28a745;
+			font-weight: bold;
+			text-align: center;
+		}
+
+		.tile-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 20px;
+		}
+
+		.tile {
+			background: #17a2b8;
+			padding: 30px;
+			text-align: center;
+			color: white;
+			font-size: 1.2em;
+			cursor: pointer;
+			transition: transform 0.3s;
+			border-radius: 10px;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+
+		.tile:hover {
+			background: #0d6efd;
+			transform: scale(1.05);
+		}
+
+		.hidden {
+			display: none;
+		}
+		footer {
+			text-align: center;
+			font-weight: bold;
+			margin-top: 20px;
+			font-size: 1em;
+			color: blue;
+		}
+
+		/* Bus Login Section */
+		#bus-login .station-navigation {
+			text-align: center;
+			margin-top: 20px;
+		}
+		#bus-login button {
+			width: 48%;
+			margin-top: 20px;
+		}
+		#bus-login p {
+			color: black; /* Changed text color to black */
+		}
+		.station-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 100px;
+			padding-bottom: 50px;
+        }
+
+		/* Admin Login Section */
+		#admin-login .form-group label {
+			color: black; /* Changed text color to black */
+		}
+
+		#admin-login input {
+			color: black; /* Changed text color to black in input fields */
+		}
+
+		/* Admin Dashboard Section */
+		#admin-dashboard {
+			margin-top: 30px;
+			padding: 20px;
+			background-image: linear-gradient(135deg, #ff6b6b, #fddb3a, #4caf50);
+			border-radius: 10px;
+			align-items: center;
+			box-shadow: 0 5px 10px black;
+		}
+		#admin-dashboard h2 {
+			text-align: center;
+			color: black;
+			font-size: 2.5em;
+			margin-bottom: 40px;
+		}
+		.tile-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 20px;
+			margin-top: 30px;
+		}
+		.tile {
+			background-color: #28a745;
+			padding: 25px;
+			text-align: center;
+			color: white;
+			font-size: 1.3em;
+			cursor: pointer;
+			transition: transform 0.3s;
+			border-radius: 10px;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+		.tile:hover {
+			background: #218838;
+			transform: scale(1.05);
+		}
+
+		#logout-button {
+			margin-top: 30px;
+		}
+		
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        li {
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            color: #555;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        li span {
+            display: inline-block;
+        }
+        .date {
+            font-weight: bold;
+            color: black;
+            width: 60%;
+        }
+        .amount {
+			font-weight: bold;
+            text-align: right;
+            color: black;
+            width: 35%;
+        }
+		.ticket{
+			font-weight: bold;
+            text-align: center;
+            color: black;
+            width: 100%;
+		}
+
+		input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+		.rfid-container {
+			max-width: 600px;
+			margin: 50px auto;
+			padding: 30px;
+			box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+			border-radius: 10px;
+			background: linear-gradient(145deg, #ff4b1f, #ff9068, #fddb3a, rgba(0, 255, 115, 0.8));
+			background-size: 300% 300%;
+			animation: color-slide 10s ease infinite;
+			backdrop-filter: blur(10px);
+			width: 90%;
+			box-sizing: border-box;
+			color: white;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>BMTC Ticket Management System Using RFID</h1>
+		<div id="login-options" class="login-options">
+			<button onclick="showBusLogin()">Bus Login</button>
+			<button onclick="showAdminLogin()">Admin Login</button>
+			<button onClick="showReports()">Reports</button>
+		</div>
+
+		<div id="bus-login" class="hidden">
+			<h2>Bus Login</h2>
+			<div class="form-group">
+				<label for="route-no">Select Route:</label>
+				<select id="route-no">
+					<option value="">-- Select a Route --</option>
+				</select>
+			</div>
+			<button onclick="routeToStation()">Select</button>
+			<button onclick="goBackToHome()">Back</button>
+		</div>
+	
+		<!-- Station Navigation -->
+		<div id="station-login" class="hidden">
+			<h2 id="route-heading">BUS FOR ROUTE</h2>
+			<div class="station-navigation">
+				<button onclick="previousStation()">Prev</button>
+				<label id="station-name" class="station-name">Station A</label>
+				<button onclick="nextStation()">Next</button>
+			</div>
+			<div  id="rfid-display" class="hidden rfid-container">
+				<h2>RFID: <span id="rfid-tag"></span></h2>
+				<h2>Balance: $<span id="rfidbalance"></span></h2>
+			</div>
+			<button onclick="goBackToHome()">Logout</button>
+		</div>
+	
+		<script>
+			let stations = [];
+			let currentStationIndex = 0;
+			// Show the station interface after selecting a route
+			function showBusLogin() {
+				document.getElementById('login-options').classList.add('hidden');
+				document.getElementById('bus-login').classList.remove('hidden');
+			}
+			function routeToStation(){
+				document.getElementById('bus-login').classList.add('hidden');
+				document.getElementById('station-login').classList.remove('hidden');
+				const routeSelect = document.getElementById('route-no').value;
+				if (!routeSelect) {
+					alert("Please select a route first.");
+					return;
+				}
+				document.getElementById('route-heading').textContent = `BUS FOR ROUTE ${routeSelect}`;
+				fetchStationsForBus(routeSelect);
+			}
+			async function fetchRoutes(RouteNo) {
+				try {
+					const response = await fetch('/get_routes');
+					const data = await response.json();
+					document.getElementById(RouteNo).innerHTML = '';
+					const routeSelect = document.getElementById(RouteNo);
+	
+					if (data.routes) {
+						data.routes.forEach(route => {
+							const option = document.createElement('option');
+							option.value = route;
+							option.textContent = route;
+							routeSelect.appendChild(option);
+						});
+					} else {
+						alert("No routes available.");
+					}
+				} catch (error) {
+					console.error("Error fetching routes:", error);
+					alert("Unable to fetch routes. Please try again later.");
+				}
+			}
+			// Fetch station names for the selected route
+			async function fetchStationsForBus(routeNo) {
+				try {
+					const response = await fetch(`/get_stations_for_bus?route_no=${routeNo}`);
+					const data = await response.json();
+	
+					if (data.success && data.stations.length > 0) {
+						stations = data.stations;
+						currentStationIndex = 0;
+						updateStationDisplay();
+					} else {
+						alert("No stations available for the selected route.");
+						logout();
+					}
+				} catch (error) {
+					console.error("Error fetching stations:", error);
+					alert("Unable to fetch stations. Please try again later.");
+					logout();
+				}
+			}
+			// Update the displayed station
+			function updateStationDisplay() {
+				const stationNameElement = document.getElementById('station-name');
+				if (stations.length > 0) {
+					stationNameElement.textContent = stations[currentStationIndex];
+				} else {
+					stationNameElement.textContent = "No stations available.";
+				}
+			}
+			// Navigate to the previous station
+			function previousStation() {
+				if (currentStationIndex > 0) {
+					currentStationIndex--;
+					updateStationDisplay();
+				} else {
+					alert("This is the first station.");
+				}
+			}
+			// Navigate to the next station
+			function nextStation() {
+				if (currentStationIndex < stations.length - 1) {
+					currentStationIndex++;
+					updateStationDisplay();
+				} else {
+					alert("This is the last station.");
+				}
+			}
+
+			function goBackToHome() {
+				document.getElementById('bus-login').classList.add('hidden');
+				document.getElementById('station-login').classList.add('hidden');
+				document.getElementById('route-no').value = ""; 
+				stations = [];
+				currentStationIndex = 0;
+				document.getElementById('station-name').textContent = "";
+				document.getElementById('login-options').classList.remove('hidden');
+			}
+						
+			async function checkForRFIDScan() {
+				try {
+					const response = await fetch('/check_rfid');  // Polling the backend for RFID scans
+					const data = await response.json();
+
+					if (data.scanned) {
+						sendStationToBackend();
+					}
+				} catch (error) {
+					console.error("Error checking RFID scan:", error);
+				}
+
+				setTimeout(checkForRFIDScan, 3000); // Poll every 2 seconds
+			}
+			function sendStationToBackend() {
+				if (stations.length === 0) return;
+
+				const currentStation = stations[currentStationIndex];
+
+				fetch('/rfid', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ station: currentStation })
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						const rfidDisplay = document.getElementById("rfid-display");
+						document.getElementById("rfid-tag").textContent = data.rfid;
+						document.getElementById("rfidbalance").textContent = data.balance;
+						rfidDisplay.classList.remove("hidden");
+						setTimeout(() => {
+							rfidDisplay.classList.add("hidden");
+						}, 3000);
+					} else {
+						alert(`Error: ${data.message}`);
+					}
+				})
+				.catch(error => console.error('Error:', error));
+			}
+
+			document.addEventListener('DOMContentLoaded', fetchRoutes('route-no'));
+			document.addEventListener('DOMContentLoaded', checkForRFIDScan);
+		</script>
+
+		<!-- Reports -->
+		<div id="report-generation" class="hidden">
+			<h2>Reports</h2>
+			<div class="tile-grid">
+				<div class="tile" onclick="getRechargeInfo()">Passenger Recharge</div>
+				<div class="tile" onclick="getPassengerTickets()">Passenger Tickets</div>
+				<div class="tile" onclick="DateAndRoute()">Tickets on Basis of Date and Route</div>
+				<div class="tile" onclick="allRoutes()">Total Routes</div>
+			</div>
+			<button id="logout-button" onclick="logoutFromReports()">Back</button>
+		</div>
+
+		<script>
+			function showReports(){
+				document.getElementById('login-options').classList.add('hidden');
+				document.getElementById('report-generation').classList.remove('hidden');
+			}
+
+			function logoutFromReports(){
+				document.getElementById('login-options').classList.remove('hidden');
+				document.getElementById('report-generation').classList.add('hidden');
+			}
+			
+			function getRechargeInfo(){
+				document.getElementById('recharge-info').classList.remove('hidden');
+				document.getElementById('report-generation').classList.add('hidden');
+			}
+
+			function allRoutes(){
+				document.getElementById('total-routes').classList.remove('hidden');
+				totalRoutes();
+				document.getElementById('report-generation').classList.add('hidden');
+			}
+
+			function DateAndRoute(){
+				document.getElementById('date-and-route').classList.remove('hidden');
+				document.getElementById('report-generation').classList.add('hidden');
+				document.addEventListener('DOMContentLoaded', fetchRoutes('routeno'));
+			}
+
+			function getPassengerTickets(){
+				document.getElementById('ticket').classList.remove('hidden');
+				document.getElementById('report-generation').classList.add('hidden');
+			}
+
+			function goBackToReport(){
+				document.getElementById('report-generation').classList.remove('hidden');
+				document.getElementById('recharge-info').classList.add('hidden');
+				document.getElementById('rfidno').value = '';
+				const rechargeDetailsDiv = document.getElementById("recharge-details");
+				rechargeDetailsDiv.innerHTML = ""; 
+				document.getElementById('ticket').classList.add('hidden');
+				document.getElementById('rfidnoo').value = '';
+				const ticketDetailsDiv = document.getElementById("ticket-details");
+				ticketDetailsDiv.innerHTML = ""; 
+				document.getElementById('date-and-route').classList.add('hidden');
+				document.getElementById('datePicker').value = '';
+				const dateDetailsDiv = document.getElementById("ticket-details");
+				dateDetailsDiv.innerHTML = ""; 
+				document.getElementById('total-routes').classList.add('hidden');
+
+			}
+		</script>
+		
+		<div id="recharge-info" class="hidden">
+			<h2>Recharge Information</h2>
+			<div class="form-group">
+				<label for="rfidno">RFID Number:</label>
+				<input type="text" id="rfidno" placeholder="Enter RFID number">
+			</div>
+			<div id="recharge-details"></div>
+			<button onclick="rechargeInfo()">Submit</button>
+			<button onclick="goBackToReport()">Back</button>
+		</div>
+
+		<script>
+			function rechargeInfo(){
+				const rfidNumber = document.getElementById("rfidno").value;
+				if (!rfidNumber) {
+					alert("Please enter an RFID number.");
+					return;
+				}
+				fetch('/get_recharge_info', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ rfid: rfidNumber })
+				})
+				.then(response => response.json())
+				.then(data => {
+					const rechargeDetailsDiv = document.getElementById("recharge-details");
+					rechargeDetailsDiv.innerHTML = ""; 
+
+					if (data.success) {
+						const recharges = data.recharges;
+						if (recharges.length === 0) {
+							rechargeDetailsDiv.innerHTML = "<p>No recharge history found.</p>";
+						} else {
+							const list = document.createElement("ul");
+							const item = document.createElement("li");
+							item.innerHTML = `<span class="date">DATE OF PAYMENT</span><span class="amount">AMOUNT</span>`;
+							list.appendChild(item);
+							recharges.forEach(recharge => {
+								const item = document.createElement("li");
+								item.innerHTML = `
+									<span class="date">${recharge[0]}</span>
+									<span class="amount">${recharge[1]}</span>
+								`;
+
+								list.appendChild(item);
+							});
+							rechargeDetailsDiv.appendChild(list);
+						}
+					} else {
+						rechargeDetailsDiv.innerHTML = `<p>${data.message}</p>`;
+					}
+				})
+				.catch(error => {
+					console.error("Error fetching recharge info:", error);
+					document.getElementById("recharge-details").innerHTML = "<p>Unable to fetch recharge details. Please try again later.</p>";
+				});
+			}
+		</script>
+
+		<div id="ticket" class="hidden">
+			<h2>Passenger Tickets</h2>
+			<div class="form-group">
+				<label for="rfidnoo">RFID Number:</label>
+				<input type="text" id="rfidnoo" placeholder="Enter RFID number">
+			</div>
+			<div id="ticket-details"></div>
+			<button onclick="PassengerTickets()">Submit</button>
+			<button onclick="goBackToReport()">Back</button>
+		</div>
+
+		<script>
+			function PassengerTickets(){
+				const rfidNumber = document.getElementById("rfidnoo").value;
+				if (!rfidNumber) {
+					alert("Please enter an RFID number.");
+					return;
+				}
+				fetch('/get_tickets_info', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ rfid: rfidNumber })
+				})
+				.then(response => response.json())
+				.then(data => {
+					const ticketDetailsDiv = document.getElementById("ticket-details");
+					ticketDetailsDiv.innerHTML = ""; 
+
+					if (data.success) {
+						const recharges = data.recharges;
+						if (recharges.length === 0) {
+							ticketDetailsDiv.innerHTML = "<p>No Tickets Found</p>";
+						} else {
+							const list = document.createElement("ul");
+							const item = document.createElement("li");
+							item.innerHTML = `<span class="ticket">ROUTE</span><span class="ticket">TIMESTAMP</span><span class="ticket">FROM</span><span class="ticket">TO</span><span class="ticket">FARE</span>`;
+							list.appendChild(item);
+							recharges.forEach(recharge => {
+								const item = document.createElement("li");
+								item.innerHTML = `
+									<span class="ticket">${recharge[0]}</span>
+									<span class="ticket">${recharge[1]}</span>
+									<span class="ticket">${recharge[2]}</span>
+									<span class="ticket">${recharge[3]}</span>
+									<span class="ticket">${recharge[4]}</span>
+								`;
+
+								list.appendChild(item);
+							});
+							ticketDetailsDiv.appendChild(list);
+						}
+					} else {
+						ticketDetailsDiv.innerHTML = `<p>${data.message}</p>`;
+					}
+				})
+				.catch(error => {
+					console.error("Error fetching Ticket info:", error);
+					document.getElementById("ticket-details").innerHTML = "<p>Unable to fetch ticket details. Please try again later.</p>";
+				});
+			}
+		</script>
+
+		<div id="date-and-route" class="hidden">
+			<h2>Tickets On Basis of Date and Route</h2>
+			<div class="form-group">
+				<label for="datePicker">Select Date</label>
+				<input type="date" id="datePicker">
+				<label for="routeno">Select Route:</label>
+				<select id="routeno">
+					<option value="">-- Select a Route --</option>
+				</select>
+			</div>
+			<div id="date-details"></div>
+			<button onclick="DateRoute()">Submit</button>
+			<button onclick="goBackToReport()">Back</button>
+		</div>
+
+		<script>
+			function DateRoute(){
+				const route = document.getElementById("routeno").value;
+				const date = document.getElementById("datePicker").value;
+				if (!route || !date) {
+					alert("Please enter all details.");
+					return;
+				}
+
+				fetch('/get_ticket_date', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ route: route, Date: date })
+				})
+				.then(response => response.json())
+				.then(data => {
+					const dateDetailsDiv = document.getElementById("date-details");
+					dateDetailsDiv.innerHTML = ""; 
+
+					if (data.success) {
+						const recharges = data.recharges;
+						if (recharges.length === 0) {
+							dateDetailsDiv.innerHTML = "<p>No Tickets Found</p>";
+						} else {
+							const list = document.createElement("ul");
+							const item = document.createElement("li");
+							item.innerHTML = `<span class="ticket">ROUTE</span><span class="ticket">TIMESTAMP</span><span class="ticket">FROM</span><span class="ticket">TO</span><span class="ticket">FARE</span>`;
+							list.appendChild(item);
+							recharges.forEach(recharge => {
+								const item = document.createElement("li");
+								item.innerHTML = `
+									<span class="ticket">${recharge[0]}</span>
+									<span class="ticket">${recharge[1]}</span>
+									<span class="ticket">${recharge[2]}</span>
+									<span class="ticket">${recharge[3]}</span>
+									<span class="ticket">${recharge[4]}</span>
+								`;
+
+								list.appendChild(item);
+							});
+							dateDetailsDiv.appendChild(list);
+						}
+					} else {
+						dateDetailsDiv.innerHTML = `<p>${data.message}</p>`;
+					}
+				})
+				.catch(error => {
+					console.error("Error fetching ticket info:", error);
+					document.getElementById("date-details").innerHTML = "<p>Unable to fetch ticket details. Please try again later.</p>";
+				});
+			}
+		</script>
+
+		<div id="total-routes" class="hidden">
+			<h2>All Routes</h2>
+			<div id="route-details"></div>
+			<button onclick="goBackToReport()">Back</button>
+		</div>
+
+		<script>
+			async function totalRoutes() {
+				try {
+					const response = await fetch('/get_routes');
+					const data = await response.json();
+					const routeSelect = document.getElementById("route-details");
+					routeSelect.innerHTML = ""; 
+					const list = document.createElement("ul");
+					const item = document.createElement("li");
+					item.innerHTML = `<span class="ticket">ROUTE</span>`;
+					if (data.routes) {
+						data.routes.forEach(route => {
+							const item = document.createElement("li");
+							item.innerHTML = `<span class="ticket">${route}</span>`;
+							list.appendChild(item);
+						});
+						routeSelect.appendChild(list);
+					} else {
+						alert("No routes available.");
+					}
+				} catch (error) {
+					console.error("Error fetching routes:", error);
+					document.getElementById("route-details").innerHTML = "<p>Unable to fetch ticket details. Please try again later.</p>";
+				}
+			}
+		</script>
+
+
+		<!-- Admin Login -->
+		<div id="admin-login" class="hidden">
+			<h2>Admin Login</h2>
+			<div class="form-group">
+				<label for="admin-username">Username:</label>
+				<input type="text" id="admin-username" placeholder="Enter username">
+			</div>
+			<div class="form-group">
+				<label for="admin-password">Password:</label>
+				<input type="password" id="admin-password" placeholder="Enter password">
+			</div>
+			<button onclick="adminDashboard()">Login</button>
+			<button onclick="logoutFromAdminLogin()">Back</button>
+		</div>
+
+		<!-- Admin Dashboard -->
+		<div id="admin-dashboard" class="hidden">
+			<h2>Admin Dashboard</h2>
+			<div class="tile-grid">
+				<div class="tile" onclick="addNewRFID()">New RFID Users</div>
+				<div class="tile" onclick="manageBalance()">Balance Management</div>
+				<div class="tile" onclick="addRoute()">Add Route</div>
+				<div class="tile" onclick="addStations()">Add/Edit Stations</div>
+				<div class="tile" onclick="updateFareCharges()">Update Fares</div>
+			</div>
+			<button id="logout-button" onclick="logoutFromAdminDashboard()">Logout</button>
+		</div>
+
+		<!-- New RFID Form -->
+		<div id="new-rfid-form" class="hidden">
+			<h2>Add New RFID User</h2>
+			<div class="form-group">
+				<label for="rfid-no">RFID Number:</label>
+				<input type="text" id="rfid-no" placeholder="Enter RFID number">
+			</div>
+			<div class="form-group">
+				<label for="rfid-balance">Balance:</label>
+				<input type="number" id="rfid-balance" placeholder="Enter balance">
+			</div>
+			<button onclick="submitRFIDUser()">Submit</button>
+			<button onclick="goBackToAdminDashboardfromRFID()">Back</button>
+		</div>
+		
+		<script>
+			function logoutFromAdminDashboard(){
+				document.getElementById('admin-dashboard').classList.add('hidden');
+				document.getElementById('login-options').classList.remove('hidden');
+			}
+
+			function addNewRFID() {
+				document.getElementById('admin-dashboard').classList.add('hidden');
+				document.getElementById('new-rfid-form').classList.remove('hidden');
+			}
+
+			function submitRFIDUser() {
+				const rfidNo = document.getElementById('rfid-no').value;
+				const balance = document.getElementById('rfid-balance').value;
+		
+				if (!rfidNo || balance === "") {
+					alert("Please fill in all fields");
+					return;
+				}
+		
+				fetch('/add_rfid_user', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ rfid_no: rfidNo, balance: balance })
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						alert(data.message);
+						// Clear form fields
+						document.getElementById('rfid-no').value = '';
+						document.getElementById('rfid-balance').value = '';
+					} else {
+						alert(`Error: ${data.message}`);
+					}
+				})
+				.catch(error => console.error('Error:', error));
+				document.getElementById('rfid-no').value = '';
+				document.getElementById('rfid-balance').value = '';
+			}
+
+			function goBackToAdminDashboardfromRFID() {
+				document.getElementById('rfid-no').value = '';
+				document.getElementById('rfid-balance').value = '';
+				document.getElementById('new-rfid-form').classList.add('hidden');
+				document.getElementById('admin-dashboard').classList.remove('hidden');
+			}
+		</script>
+
+		<!-- Balance Management form-->
+		<div id="balance-management-form" class="hidden">
+			<h2>Balance Management</h2>
+		
+			<!-- RFID Input Section -->
+			<div class="form-group">
+				<label for="balance-rfid">Enter RFID Number:</label>
+				<input type="text" id="balance-rfid" placeholder="Enter RFID number">
+			</div>
+			<button onclick="fetchBalance()">Submit</button>
+			<button onclick="goBackToAdminDashboardfromBalance()">Back</button>
+		
+			<!-- Current Balance and Amount Entry Section -->
+			<div id="balance-display" class="hidden">
+				<div class="form-group">
+					<label>-----------------------------------------------------------------------------------------------------</label>
+					<label>Current Balance: </label><label id="current-balance" class="balance"></label>
+				</div>
+				<div class="form-group">
+					<label for="amount-to-add">Enter Amount to Add:</label>
+					<input type="number" id="amount-to-add" placeholder="Enter amount">
+				</div>
+				<button onclick="updateBalance()">Add Balance</button>
+				<button onclick="goBackToAdminDashboardfromBalance()">Back</button>
+			</div>
+		</div>
+
+		<script>
+			// Show Balance Management interface
+			function manageBalance() {
+				document.getElementById('admin-dashboard').classList.add('hidden');
+				document.getElementById('balance-management-form').classList.remove('hidden');
+			}
+			// Fetch balance for the entered RFID number
+			function fetchBalance() {
+				const rfidNo = document.getElementById('balance-rfid').value;
+				if (!rfidNo) {
+					alert("Please enter an RFID number.");
+					return;
+				}
+		
+				fetch(`/get_balance?rfid_no=${rfidNo}`)
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							document.getElementById('current-balance').textContent = `${data.balance}`;
+							document.getElementById('balance-display').classList.remove('hidden');
+						} else {
+							alert(`Error: ${data.message}`);
+						}
+					})
+					.catch(error => console.error('Error:', error));
+			}
+			// Update balance in the database
+			function updateBalance() {
+				const rfidNo = document.getElementById('balance-rfid').value;
+				const amountToAdd = document.getElementById('amount-to-add').value;
+		
+				if (!amountToAdd || isNaN(amountToAdd)) {
+					alert("Please enter a valid amount to add.");
+					return;
+				}
+
+				if (amountToAdd <= 0) {
+					alert("Please enter positive amount to add.");
+					return;
+				}
+		
+				fetch('/update_balance', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ rfid_no: rfidNo, amount: amountToAdd })
+				})
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							alert(data.message);
+							document.getElementById('current-balance').textContent = `${data.new_balance}`;
+							document.getElementById('amount-to-add').value = '';
+						} else {
+							alert(`Error: ${data.message}`);
+						}
+					})
+					.catch(error => console.error('Error:', error));
+			}
+			// Go back to Admin Dashboard
+			function goBackToAdminDashboardfromBalance() {
+				document.getElementById('balance-management-form').classList.add('hidden');
+				document.getElementById('balance-display').classList.add('hidden');
+				document.getElementById('balance-rfid').value = '';
+				document.getElementById('amount-to-add').value = '';
+				document.getElementById('admin-dashboard').classList.remove('hidden');
+			}
+		</script>
+
+		<!-- Add Route Form -->
+		<div id="add-route-form" class="hidden">
+			<h2>Add New Route</h2>
+			<div class="form-group">
+				<label for="route-number">Route Number:</label>
+				<input type="text" id="route-number" placeholder="Enter route number">
+			</div>
+			<div class="form-group">
+				<label for="start-stop">Start Stop:</label>
+				<input type="text" id="start-stop" placeholder="Enter start stop">
+			</div>
+			<div class="form-group">
+				<label for="end-stop">End Stop:</label>
+				<input type="text" id="end-stop" placeholder="Enter end stop">
+			</div>
+			<button onclick="submitRoute()">Submit</button>
+			<button onclick="goBackToAdminDashboardFromRoute()">Back</button>
+		</div>
+
+		<script>
+			// Show the Add Route form
+			function addRoute() {
+				document.getElementById('admin-dashboard').classList.add('hidden');
+				document.getElementById('add-route-form').classList.remove('hidden');
+			}
+			function submitRoute() {
+				const routeNumber = document.getElementById('route-number').value.trim();
+				const startStop = document.getElementById('start-stop').value.trim();
+				const endStop = document.getElementById('end-stop').value.trim();
+				if (!routeNumber || !startStop || !endStop) {
+					alert("Please fill in all fields.");
+					return;
+				}
+				
+				fetch('/add_route', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ route_number: routeNumber, start_stop: startStop, end_stop: endStop })
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						alert(data.message);
+						// Clear form fields
+						document.getElementById('route-number').value = '';
+						document.getElementById('start-stop').value = '';
+						document.getElementById('end-stop').value = '';
+					} else {
+						alert(`Error: ${data.message}`);
+					}
+				})
+				.catch(error => console.error('Error:', error));
+				document.getElementById('route-number').value = '';
+				document.getElementById('start-stop').value = '';
+				document.getElementById('end-stop').value = '';
+			}
+			function goBackToAdminDashboardFromRoute() {
+				document.getElementById('route-number').value = '';
+				document.getElementById('start-stop').value = '';
+				document.getElementById('end-stop').value = '';
+				document.getElementById('add-route-form').classList.add('hidden');
+				document.getElementById('admin-dashboard').classList.remove('hidden');
+			}
+		</script>
+
+		<!-- Add Station Form -->	
+		<div id="edit-stations-form" class="hidden">
+			<h2>Add Stations</h2>
+			<!-- Route Number Input -->
+			<div id="route-selection" class="form-group">
+				<label for="routenumber">Select Route:</label>
+				<select id="routenumber">
+					<option value="">-- Select a Route --</option>
+				</select>
+				<button onclick="fetchStations()">Submit</button>
+				<button onclick="goBackToAdminDashboardFromStations()">Back</button>
+			</div>
+		
+			<!-- Station Editing Section -->
+			<div id="stations-interface" class="hidden">
+				<h3>Stations for <span id="route-header"></span> : </h3>
+				<div id="stations-list"></div>
+				<button onclick="addStationInput()">Add Station</button>
+				<button onclick="saveStations()">Save Stations</button>
+				<button onclick="goBackToAdminDashboardFromStations()">Back</button>
+			</div>
+		</div>
+
+		<script>
+			function addStations() {
+				document.getElementById('admin-dashboard').classList.add('hidden');
+				fetchRoutes('routenumber')
+				document.getElementById('edit-stations-form').classList.remove('hidden');
+			}
+		
+			function fetchStations() {
+				const routeNumber = document.getElementById('routenumber').value;
+				if (!routeNumber) {
+					alert("Please enter a route number.");
+					return;
+				}
+		
+				fetch(`/get_stations?route_no=${routeNumber}`)
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							document.getElementById('route-header').textContent = data.route_no;
+							document.getElementById('route-selection').classList.add('hidden');
+							document.getElementById('stations-interface').classList.remove('hidden');
+						} else {
+							alert(`Error: ${data.message}`);
+						}
+					})
+					.catch(error => console.error('Error:', error));
+			}
+		
+			function populateStationFields(stations) {
+				const stationsList = document.getElementById('stations-list');
+				stationsList.innerHTML = ''; // Clear previous entries
+		
+				stations.forEach((station, index) => {
+					addStationInput(station, index + 1);
+				});
+			}
+		
+			function addStationInput(stationName = '', index = null) {
+				const stationsList = document.getElementById('stations-list');
+				const stationDiv = document.createElement('div');
+				stationDiv.classList.add('form-group');
+		
+				stationDiv.innerHTML = `
+					<label>Station ${index || stationsList.children.length + 1}:</label>
+					<input type="text" class="station-name-for-stations" placeholder="Enter station name" value="${stationName}">
+				`;
+				stationsList.appendChild(stationDiv);
+			}
+		
+			function saveStations() {
+				const routeNumber = document.getElementById('route-header').textContent;
+				const stationInputs = document.querySelectorAll('.station-name-for-stations');
+				const stationNames = Array.from(stationInputs).map(input => input.value.trim()).filter(name => name);
+		
+				if (stationNames.length === 0) {
+					alert("Please enter at least one station.");
+					return;
+				}
+		
+				fetch('/save_stations', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ route_no: routeNumber, stations: stationNames })
+				})
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							alert(data.message);
+						} else {
+							alert(`Error: ${data.message}`);
+						}
+					})
+					.catch(error => console.error('Error:', error));
+			}
+		
+			function goBackToAdminDashboardFromStations() {
+				document.getElementById('edit-stations-form').classList.add('hidden');
+				document.getElementById('stations-interface').classList.add('hidden');
+				document.getElementById('route-selection').classList.remove('hidden');
+				document.getElementById('stations-list').innerHTML = '';
+				document.getElementById('admin-dashboard').classList.remove('hidden');
+			}
+		</script>
+
+		<!-- Update Fares Form -->
+		<div id="update-fares-form" class="hidden">
+			<h2>Update Fares</h2>
+			<div class="form-group">
+				<label for="update-route-no">Route No:</label>
+				<input type="text" id="update-route-no" placeholder="Enter Route No">
+			</div>
+			<button onclick="fetchStationsForRoute()">Next</button>
+			<button onclick="goBackToAdminDashboardfromFares()">Back</button>
+		</div>
+
+		<!-- Station Selection and Fare Input Form -->
+		<div id="select-stations-form" class="hidden">
+			<h2>Set Fares for Route</h2>
+			<div class="form-group">
+				<label for="source-station">Source Station:</label>
+				<select id="source-station">
+					<option value="">-- Select Source Station --</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="destination-station">Destination Station:</label>
+				<select id="destination-station">
+					<option value="">-- Select Destination Station --</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="fare-amount">Fare Amount:</label>
+				<input type="number" id="fare-amount" placeholder="Enter Fare Amount">
+			</div>
+			<button onclick="submitFareUpdate()">Submit</button>
+			<button onclick="goBackToRouteEntry()">Back</button>
+		</div>
+
+		<script>
+			function updateFareCharges() {
+				document.getElementById('admin-dashboard').classList.add('hidden');
+				document.getElementById('update-fares-form').classList.remove('hidden');
+			}
+
+			// Go back to Admin Dashboard from the Fare Update form
+			function goBackToAdminDashboardfromFares() {
+				document.getElementById('update-fares-form').classList.add('hidden');
+				document.getElementById('admin-dashboard').classList.remove('hidden');
+				document.getElementById('update-route-no').value = '';
+			}
+
+			// Go back to the Update Fares form
+			function goBackToRouteEntry() {
+				document.getElementById('select-stations-form').classList.add('hidden');
+				document.getElementById('update-fares-form').classList.remove('hidden');
+				document.getElementById('source-station').value = '';
+				document.getElementById('destination-station').value = '';
+				document.getElementById('fare-amount').value = '';			
+			}
+
+			function fetchStationsForRoute() {
+				const routeNo = document.getElementById('update-route-no').value;
+
+				/*if (!routeNo) {
+					alert("Please enter a valid route number.");
+					return;
+				}*/
+
+				// Simulating fetch call to get station list for a given route
+				fetch(`/get_stations_for_route?route_no=${routeNo}`)
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							document.getElementById('update-fares-form').classList.add('hidden');
+							document.getElementById('select-stations-form').classList.remove('hidden');
+							populateStationDropdown(data.stations);
+						} else {
+							alert(data.message);
+
+						}
+					})
+					.catch(error => console.error('Error fetching stations:', error));
+			}
+
+			// Populate the station dropdown
+			function populateStationDropdown(stations) {
+				const sourceDropdown = document.getElementById('source-station');
+				const destinationDropdown = document.getElementById('destination-station');
+
+				// Clear existing options
+				sourceDropdown.innerHTML = '';
+				destinationDropdown.innerHTML = '';
+
+				// Populate with station names
+				stations.forEach(station => {
+					const sourceOption = document.createElement('option');
+					const destOption = document.createElement('option');
+					
+					sourceOption.value = station;
+					sourceOption.textContent = station;
+					destOption.value = station;
+					destOption.textContent = station;
+					
+					sourceDropdown.appendChild(sourceOption);
+					destinationDropdown.appendChild(destOption);
+				});
+			}
+
+			// Step 2: Submit the Fare for Selected Station
+			function submitFareUpdate() {
+				const routeNo = document.getElementById('update-route-no').value;
+				const sourceStation = document.getElementById('source-station').value;
+				const destinationStation = document.getElementById('destination-station').value;
+				const fareAmount = document.getElementById('fare-amount').value;
+
+				if (!routeNo || !sourceStation || !destinationStation || fareAmount === '') {
+					alert('Please fill in all fields.');
+					return;
+				}
+
+				if (sourceStation === destinationStation){
+					alert('Enter Different Source and Destination');
+					return;
+				}
+
+				const fareData = {
+					route_no: routeNo,
+					source_station: sourceStation,
+					destination_station: destinationStation,
+					fare: parseFloat(fareAmount)
+				};
+
+				fetch('/update_fare_for_route', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(fareData)
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						alert('Fare updated successfully!');
+					} else {
+						alert(data.message);
+					}
+				})
+				.catch(error => {
+					console.error('Error updating fare:', error);
+					alert('Failed to update fare. Please try again.');
+				});
+			}
+		</script>
+
+		<script>
+
+			function showAdminLogin() {
+				document.getElementById('admin-username').value = '';
+				document.getElementById('admin-password').value = '';
+				document.getElementById('login-options').classList.add('hidden');
+				document.getElementById('admin-login').classList.remove('hidden');
+			}
+
+			function adminDashboard() {
+				const userName = document.getElementById('admin-username').value;
+				const Password = document.getElementById('admin-password').value;
+				fetch('/login', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({username:userName, password: Password})
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						document.getElementById('admin-login').classList.add('hidden');
+						document.getElementById('admin-dashboard').classList.remove('hidden');
+					} else {
+						alert(data.error);
+					}
+				})
+				.catch(error => console.error('Error:', error));
+			}
+
+			function logoutFromAdminLogin() {
+				document.getElementById('admin-username').value = '';
+				document.getElementById('admin-password').value = '';
+				document.getElementById('admin-login').classList.add('hidden');
+				document.getElementById('login-options').classList.remove('hidden');
+			}
+
+
+		</script>
+	</div>
+	<footer>
+	</footer>
+	
+	
+</body>
+</html>
